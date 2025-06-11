@@ -3,9 +3,6 @@
 // Modified BSD License license that can be found in
 // the LICENSE file.
 
-//go:build !linux && !darwin
-// +build !linux,!darwin
-
 // Package shm provides functions to open and unlink shared memory.
 package shm
 
@@ -14,6 +11,11 @@ package shm
 
 #include <stdlib.h>          // For free
 #include <sys/mman.h>        // For shm_*
+
+// darwin uses varargs for shm_open, so we need to wrap it
+int shm_open_wrap(const char *name, int oflag, int mode) {
+    return shm_open(name, oflag, mode);
+}
 */
 import "C"
 
@@ -40,7 +42,7 @@ func Open(name string, flag int, perm os.FileMode) (*os.File, error) {
 	nameC := C.CString(name)
 	defer C.free(unsafe.Pointer(nameC))
 
-	fd, err := C.shm_open(nameC, C.int(flag), C.mode_t(perm))
+	fd, err := C.shm_open_wrap(nameC, C.int(flag), C.int(perm))
 	if err != nil {
 		return nil, &os.PathError{Op: "open", Path: name, Err: err}
 	}
