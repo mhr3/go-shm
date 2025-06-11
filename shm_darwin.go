@@ -7,8 +7,6 @@
 package shm
 
 /*
-#cgo LDFLAGS: -lrt
-
 #include <stdlib.h>          // For free
 #include <sys/mman.h>        // For shm_*
 
